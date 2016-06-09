@@ -17,7 +17,11 @@ create_javah(TARGET jni_headers
 )
 
 # configure import realm core lib
-set(core_lib_PATH ${REALM_CORE_DIST_DIR}/librealm-android-${ANDROID_ABI}.a)
+set(debug_SUFFIX "")
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(debug_SUFFIX "-dbg")
+endif()
+set(core_lib_PATH ${REALM_CORE_DIST_DIR}/librealm-android-${ANDROID_ABI}${debug_SUFFIX}.a)
 # Workaround for old core's funny ABI nicknames
 if (NOT EXISTS ${core_lib_PATH})
     if (${ANDROID_ABI} STREQUAL "armeabi")
