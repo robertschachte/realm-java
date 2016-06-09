@@ -45,7 +45,9 @@ elseif (${ANDROID_ABI} STREQUAL "armeabi-v7a")
 endif()
 set(WARNING_CXX_FLAGS "-Wall -Wextra -pedantic -Wno-long-long -Wno-variadic-macros ")
 set(REALM_COMMON_CXX_FLAGS " -DREALM_HAVE_CONFIG -DPIC -pthread -fvisibility=hidden -std=gnu++11")
+set(CMAKE_CXX_FLAGS_RELEASE "-Os -DNDEBUG")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${REALM_COMMON_CXX_FLAGS} ${WARNING_CXX_FLAGS} ${ABI_CXX_FLAGS}")
+
 
 # Set link flags
 set(REALM_LINKER_FLAGS "-pthread -flto")
