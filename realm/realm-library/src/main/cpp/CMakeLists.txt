@@ -16,26 +16,26 @@ create_javah(TARGET jni_headers
   OUTPUT_DIR ${CMAKE_SOURCE_DIR}/jni_include
 )
 
-#set(lib_src_DIR ${CMAKE_SOURCE_DIR}/../../../libsrc)
-#set(lib_build_DIR $ENV{HOME}/tmp)
-#file(MAKE_DIRECTORY ${lib_build_DIR})
-
-
-#add_subdirectory(${lib_src_DIR}/gmath
-#                 ${lib_build_DIR}/gmath)
-#add_subdirectory(${lib_src_DIR}/gperf
-#                 ${lib_build_DIR}/gperf)
-
-# configure import libs
-set(distribution_DIR ${CMAKE_SOURCE_DIR}/../../../distribution)
-#LINK_DIRECTORIES(${distribution_DIR}/gmath/lib/${ANDROID_ABI})
+# configure import realm core lib
+set(core_lib_PATH ${REALM_CORE_DIST_DIR}/librealm-android-${ANDROID_ABI}.a)
+# Workaround for old core's funny ABI nicknames
+if (NOT EXISTS ${core_lib_PATH})
+    if (${ANDROID_ABI} STREQUAL "armeabi")
+        set(core_lib_PATH ${REALM_CORE_DIST_DIR}/librealm-android-arm.a)
+    elseif (${ANDROID_ABI} STREQUAL "armeabi-v7a")
+        set(core_lib_PATH ${REALM_CORE_DIST_DIR}/librealm-android-arm-v7a.a)
+    elseif (${ANDROID_ABI} STREQUAL "arm64-v8a")
+        set(core_lib_PATH ${REALM_CORE_DIST_DIR}/librealm-android-arm64.a)
+    else()
+        message(FATAL_ERROR "Cannot find core lib file: ${core_lib_PATH}")
+    endif()
+endif()
 
 add_library(lib_realm_core STATIC IMPORTED )
-set_target_properties(lib_realm_core PROPERTIES IMPORTED_LOCATION
-    ${distribution_DIR}/realm_core/librealm-android-${ANDROID_ABI}.a)
+set_target_properties(lib_realm_core PROPERTIES IMPORTED_LOCATION ${core_lib_PATH})
 
 # build application's shared lib
-include_directories(${distribution_DIR}/realm_core/include ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/jni_include)
+include_directories(${REALM_CORE_DIST_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/jni_include)
 
 # Set compile flags
 if (${ANDROID_ABI} STREQUAL "armeabi")
