@@ -4,7 +4,7 @@ include (UseJava)
 
 #TODO: Find a better to find javah
 set(Java_JAVAH_EXECUTABLE "/bin/javah")
-set(CMAKE_VERBOSE_MAKEFILE on)
+set(CMAKE_VERBOSE_MAKEFILE ON)
 
 create_javah(TARGET jni_headers
   CLASSES io.realm.internal.Table io.realm.internal.Util io.realm.internal.TableView
@@ -36,10 +36,24 @@ set_target_properties(lib_realm_core PROPERTIES IMPORTED_LOCATION
 
 # build application's shared lib
 include_directories(${distribution_DIR}/realm_core/include ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/jni_include)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+
+# Set compile flags
+if (${ANDROID_ABI} STREQUAL "armeabi")
+    set(ABI_CXX_FLAGS "-mthumb")
+elseif (${ANDROID_ABI} STREQUAL "armeabi-v7a")
+    set(ABI_CXX_FLAGS "-mthumb -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16")
+endif()
+set(WARNING_CXX_FLAGS "-Wall -Wextra -pedantic -Wno-long-long -Wno-variadic-macros ")
+set(REALM_COMMON_CXX_FLAGS " -DREALM_HAVE_CONFIG -DPIC -pthread -fvisibility=hidden -std=gnu++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${REALM_COMMON_CXX_FLAGS} ${WARNING_CXX_FLAGS} ${ABI_CXX_FLAGS}")
+
+# Set link flags
+set(REALM_LINKER_FLAGS "-pthread -flto")
+set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${REALM_LINKER_FLAGS}")
+
 file(GLOB jni_SRC
     "*.cpp"
 )
 add_library(realm-jni SHARED ${jni_SRC})
 add_dependencies(realm-jni jni_headers)
-target_link_libraries(realm-jni log android lib_realm_core)
+target_link_libraries(realm-jni log lib_realm_core)
