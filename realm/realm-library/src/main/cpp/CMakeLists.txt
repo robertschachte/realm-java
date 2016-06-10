@@ -42,19 +42,31 @@ set_target_properties(lib_realm_core PROPERTIES IMPORTED_LOCATION ${core_lib_PAT
 include_directories(${REALM_CORE_DIST_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_SOURCE_DIR}/jni_include)
 
 # Set compile flags
+# TODO: Is this correct?
+set(ANDROID_STL "gnustl_static")
+set(ANDROID_NO_UNDEFINED OFF)
+set(ANDROID_SO_UNDEFINED OFF)
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    set(ANDROID_FUNCTION_LEVEL_LINKING OFF)
+else()
+    set(ANDROID_FUNCTION_LEVEL_LINKING ON)
+endif()
+set(ANDROID_NOEXECSTACK OFF)
+
 if (${ANDROID_ABI} STREQUAL "armeabi")
     set(ABI_CXX_FLAGS "-mthumb")
 elseif (${ANDROID_ABI} STREQUAL "armeabi-v7a")
     set(ABI_CXX_FLAGS "-mthumb -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16")
 endif()
 set(WARNING_CXX_FLAGS "-Wall -Wextra -pedantic -Wno-long-long -Wno-variadic-macros ")
-set(REALM_COMMON_CXX_FLAGS " -DREALM_HAVE_CONFIG -DPIC -pthread -fvisibility=hidden -std=gnu++11")
+set(REALM_COMMON_CXX_FLAGS " -DREALM_HAVE_CONFIG -DPIC -pthread -fvisibility=hidden -std=c++11 -flto")
 set(CMAKE_CXX_FLAGS_RELEASE "-Os -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -DREALM_DEBUG -fno-elide-constructors")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${REALM_COMMON_CXX_FLAGS} ${WARNING_CXX_FLAGS} ${ABI_CXX_FLAGS}")
 
 
 # Set link flags
-set(REALM_LINKER_FLAGS "-pthread -flto")
+set(REALM_LINKER_FLAGS "")
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${REALM_LINKER_FLAGS}")
 
 file(GLOB jni_SRC
@@ -62,4 +74,4 @@ file(GLOB jni_SRC
 )
 add_library(realm-jni SHARED ${jni_SRC})
 add_dependencies(realm-jni jni_headers)
-target_link_libraries(realm-jni log lib_realm_core)
+target_link_libraries(realm-jni log android lib_realm_core)
