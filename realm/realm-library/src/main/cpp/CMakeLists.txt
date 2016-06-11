@@ -1,10 +1,15 @@
 cmake_minimum_required(VERSION 3.4.1)
 
-# To find the javah
+# find javah
 find_package(Java COMPONENTS Development)
-if (NOT Java_FOUND)
-    # cmake shipped with android-ndk has a bug some where. Cannot find java on ArchLinux
-    set(Java_JAVAH_EXECUTABLE "/bin/javah")
+if (NOT Java_Development_FOUND)
+    if (DEFINED ENV{JAVA_HOME} AND EXISTS "$ENV{JAVA_HOME}/bin/javah")
+      set(Java_JAVAH_EXECUTABLE "$ENV{JAVA_HOME}/bin/javah")
+    elseif (EXISTS "/usr/bin/javah")
+      set(Java_JAVAH_EXECUTABLE "/usr/bin/javah")
+    else()
+      message(FATAL_ERROR "Cannot find javah")
+    endif()
 endif()
 include (UseJava)
 
