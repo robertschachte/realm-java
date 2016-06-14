@@ -145,7 +145,7 @@ task javadocJar(type: Jar, dependsOn: javadoc) {
 }
 
 task findbugs(type: FindBugs) {
-    //dependsOn android.assembleDebug
+    dependsOn assemble
     group = 'Verification'
 
     ignoreFailures = false
