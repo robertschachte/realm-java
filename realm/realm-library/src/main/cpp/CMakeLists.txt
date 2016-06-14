@@ -25,12 +25,15 @@ create_javah(TARGET jni_headers
   OUTPUT_DIR ${CMAKE_SOURCE_DIR}/jni_include
 )
 
-# configure import realm core lib
-set(debug_SUFFIX "")
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(debug_SUFFIX "-dbg")
-endif()
-set(core_lib_PATH ${REALM_CORE_DIST_DIR}/librealm-android-${ANDROID_ABI}${debug_SUFFIX}.a)
+# TODO: Ideally the debug build should link with core's debug build. But core dbg lib has
+# some compile options problems with arm, especially with macro REALM_DEBUG. Link to core
+# dbg for debug build when that gets solved.
+# We always link to the non-dbg version of core libs for now.
+# This means only JNI part has debugging symbols with debug build.
+# Debugging with core source code will also be done though anther approach -- compiling the core
+# with cmake inside android project.
+# Configure import realm core lib
+set(core_lib_PATH ${REALM_CORE_DIST_DIR}/librealm-android-${ANDROID_ABI}.a)
 # Workaround for old core's funny ABI nicknames
 if (NOT EXISTS ${core_lib_PATH})
     if (${ANDROID_ABI} STREQUAL "armeabi")
@@ -44,7 +47,7 @@ if (NOT EXISTS ${core_lib_PATH})
     endif()
 endif()
 
-add_library(lib_realm_core STATIC IMPORTED )
+add_library(lib_realm_core STATIC IMPORTED)
 set_target_properties(lib_realm_core PROPERTIES IMPORTED_LOCATION ${core_lib_PATH})
 
 # build application's shared lib
@@ -55,11 +58,7 @@ include_directories(${REALM_CORE_DIST_DIR}/include ${CMAKE_SOURCE_DIR} ${CMAKE_S
 set(ANDROID_STL "gnustl_static")
 set(ANDROID_NO_UNDEFINED OFF)
 set(ANDROID_SO_UNDEFINED OFF)
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(ANDROID_FUNCTION_LEVEL_LINKING OFF)
-else()
-    set(ANDROID_FUNCTION_LEVEL_LINKING ON)
-endif()
+set(ANDROID_FUNCTION_LEVEL_LINKING ON)
 set(ANDROID_NOEXECSTACK OFF)
 
 if (${ANDROID_ABI} STREQUAL "armeabi")
@@ -68,9 +67,9 @@ elseif (${ANDROID_ABI} STREQUAL "armeabi-v7a")
     set(ABI_CXX_FLAGS "-mthumb -march=armv7-a -mfloat-abi=softfp -mfpu=vfpv3-d16")
 endif()
 set(WARNING_CXX_FLAGS "-Wall -Wextra -pedantic -Wno-long-long -Wno-variadic-macros ")
-set(REALM_COMMON_CXX_FLAGS " -DREALM_HAVE_CONFIG -DPIC -pthread -fvisibility=hidden -std=c++11 -flto")
-set(CMAKE_CXX_FLAGS_RELEASE "-Os -DNDEBUG")
-set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -DREALM_DEBUG -fno-elide-constructors")
+set(REALM_COMMON_CXX_FLAGS " -DREALM_HAVE_CONFIG -DPIC -pthread -fvisibility=hidden -std=c++14")
+set(CMAKE_CXX_FLAGS_RELEASE "-Os -DNDEBUG -flto")
+set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -Os -DNDEBUG")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${REALM_COMMON_CXX_FLAGS} ${WARNING_CXX_FLAGS} ${ABI_CXX_FLAGS}")
 
 
