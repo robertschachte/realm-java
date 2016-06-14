@@ -36,7 +36,8 @@ if (!ext.coreArchiveDir) {
     ext.coreArchiveDir = ".."
 }
 ext.coreArchiveFile = rootProject.file("${ext.coreArchiveDir}/core-android-${project.coreVersion}.tar.gz")
-ext.coreDir = file("${projectDir}/distribution/core-${project.coreVersion}")
+ext.coreDistributionDir = file("${projectDir}/distribution/realm-core/")
+ext.coreDir = file("${project.coreDistributionDir.getAbsolutePath()}/core-${project.coreVersion}")
 
 android {
     compileSdkVersion 23
@@ -395,11 +396,12 @@ task deployCore(group: 'build setup', description: 'Deploy the latest version of
     }
 
     doLast {
+        // Delete all files to avoid multiple copies of the same header file in Android Studio.
         exec {
             commandLine = [
                     'rm',
                     '-rf',
-                    project.coreDir.getAbsolutePath()
+                    project.coreDistributionDir.getAbsolutePath()
             ]
         }
         copy {
