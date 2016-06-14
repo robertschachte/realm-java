@@ -84,3 +84,14 @@ file(GLOB jni_SRC
 add_library(realm-jni SHARED ${jni_SRC})
 add_dependencies(realm-jni jni_headers)
 target_link_libraries(realm-jni log android lib_realm_core)
+
+# Strip the release so files and backup the unstripped versions
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(unstripped_SO_DIR "${CMAKE_SOURCE_DIR}/../../../build/outputs/jniLibs-unstripped/${ANDROID_ABI}")
+    add_custom_command(TARGET realm-jni
+        POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory ${unstripped_SO_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:realm-jni> ${unstripped_SO_DIR}
+        COMMAND ${CMAKE_STRIP} $<TARGET_FILE:realm-jni>)
+endif()
+
