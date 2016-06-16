@@ -2,8 +2,13 @@
 
 ### Bug fixes
 
-* Fixed a crash when calling Table.toString() in debugger (#2429).
-* Fixed a crash that RealmResults was not updated in Realm's change listener by adjusting the calling orders of listeners on Realm, RealmObject and RealmResults (#2926).
+* Fixed a crash when calling `Table.toString()` in debugger (#2429).
+* Fixed a race condition which would cause some `RealmResults` to not be properly updated inside a `RealmChangeListener`. This could result in crashes when accessing items from those results (#2926/#2951).
+* Fixed a bug that could cause Realm to lose track of primary key when using `RealmObjectSchema.removeField()` and `RealmObjectSchema.renameField()` (#2829/#2926).
+* Fixed a bug that prevented some devices from finding async related JNI methods correctly.
+* Updated ProGuard configuration in order not to depend on Android's default configuration (#2972).
+* Fixed a race condition between Realms notifications and other UI events. This could e.g. cause ListView to crash (#2990).
+* Fixed a bug that allowed both `RealmConfiguration.Builder.assetFile()`/`deleteRealmIfMigrationNeeded()` to be configured at the same time, which leads to the asset file accidentally being deleted in migrations (#2933).
 
 ### Enhancements
 
